@@ -1,15 +1,31 @@
 # jai-view
 Simple module for making array and string views.
 
-This module exposes the following procedures:
+## Importing
+`view.jai` is the only required file, `module.jai` only loads it, so you can do either of these:
 
+* Copy `view.jai` to your modules directory and be done with it.
+* Clone this whole directory to you modules:
+  * `cd project_dir`
+  * `git clone git@github.com:Sanian-Creations/jai-view.git modules/view`
+
+This project is licensed under Zero-Clause BSD, aka do whatever the hell you want I don't care.
+
+## Basic Usage
 ```odin
-view      :: (arr, start_index, count,     trunc := false, check := true) -> arr
-rview     :: (arr, start_index, end_index, trunc := false, check := true) -> arr
-view_from :: (arr, start_index,                            check := true) -> arr
+view      :: (src, start_index, count,     trunc := false, check := true) -> []E
+rview     :: (src, start_index, end_index, trunc := false, check := true) -> []E
+view_from :: (src, start_index,                            check := true) -> []E
+```
+```odin
+src := "0123456789"; // Supports both arrays and strings
 
-// * 'arr' may also be string
-// * Every proc has a *_safe counterpart which has no 'check' param but returns an extra 'ok' bool
+a := view(src, 3, 5);   // "34567"   Starting at index 3, 5 elements
+b := rview(src, 3, 5);  // "34"      Range view from index 3 to 5, end index is exclusive
+c := view_from(src, 3); // "3456789" From index 3 to end of array
+
+d     := view(src, 3, 8);      // Assertion failed: On source.count=10, couldn't make view [3, 11), count=8
+e, ok := view_safe(src, 3, 8); // "", false
 ```
 
 ## Why not use Basic.array_view?
@@ -36,3 +52,48 @@ behaviour. Silently continuing with an empty view just makes potential bugs hard
 - Variants with slightly different args for convienience
   - `rview`     - supports an index range (start/end indeces) rather than a start/count.
   - `view_from` - supports view-to-end-of-array
+
+## Advanced usage
+```odin
+// In this example any ? represents memory outside the source array/string
+src := "0123456789";
+vw: string;
+ok: bool;
+
+// Views exceeding the end of the array
+// 0123456789???????
+//       |------|
+
+vw = view(src, 6, 8); // Assertion failed: On source.count=10, couldn't make view [6, 14), count=8
+vw = view(src, 6, 8, check=false);  // "6789????" It just makes the array without checking
+vw = view(src, 6, 8, trunc=true);   // "6789" Shortens the array to fit in bounds
+vw, ok = view_safe(src, 6, 8);             // ""     ok=false
+vw, ok = view_safe(src, 6, 8, trunc=true); // "6789" ok=true
+
+
+// Views entirely beyond the end of the array
+// 0123456789??????????
+//             |---|
+
+vw = view(src, 12, 5, check=false); // "?????" It just makes a garbo view, be careful
+vw = view(src, 12, 5, trunc=true);  // Even with truncation, start index must be in bounds
+// Assertion failed: On source.count=10, couldn't make view [12, 20), count=5
+
+// With truncation, turning off check is bad. You can get negative sized arrays if start index
+// is outside the array. If you want to not assert, use *_safe and ignore the ok value:
+vw     = view(src, 12, 5, trunc=true, check=false); // string with count = -2 This is bad!
+vw, ok = view_safe(src, 12, 5, trunc=true);         // "" ok=false
+
+
+// Views starting before the array
+// ?????0123456789
+//   |---|
+
+neg3 := -3;
+vw = view(src, -3, 5);   // Comptime assert because -3 is constant
+vw = view(src, neg3, 5); // Runtime assert
+vw = view(src, neg3, 5, trunc=true); // Still runtime assert, truncation only works at the end
+
+// Though I could add an additional option for truncation from the start, I have found no good reason for it.
+// If you have a good reason, or other things that could be added, let me know in the SB discord, @Sanian
+```

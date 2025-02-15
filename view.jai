@@ -140,7 +140,7 @@ __view_from :: #code {
 			source.count, start_index, loc=loc) then debug_break();
 	}
 
-	return .{source.count - start_index, start_index + source.data};
+	return .{ source.count - start_index, start_index + source.data };
 }
 
 common_header_code :: #code #if true { // '#if true' ensures this code is *not* block scoped.
