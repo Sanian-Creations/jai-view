@@ -24,7 +24,7 @@ a := view(src, 3, 5);   // "34567"   Starting at index 3, 5 elements
 b := rview(src, 3, 5);  // "34"      Range view from index 3 to 5, end index is exclusive
 c := view_from(src, 3); // "3456789" From index 3 to end of array
 
-d     := view(src, 3, 8);      // Assertion failed: On source.count=10, couldn't make view [3, 11), count=8
+d := view(src, 3, 8); // Assertion failed: On source.count=10, couldn't make view [3, 11), count=8
 e, ok := view_safe(src, 3, 8); // "", false
 ```
 
@@ -60,7 +60,7 @@ src := "0123456789";
 vw: string;
 ok: bool;
 
-// Views exceeding the end of the array
+// Views exceeding the end of the array.
 // 0123456789???????
 //       |------|
 
@@ -71,7 +71,7 @@ vw, ok = view_safe(src, 6, 8);             // ""     ok=false
 vw, ok = view_safe(src, 6, 8, trunc=true); // "6789" ok=true
 
 
-// Views entirely beyond the end of the array
+// Views entirely beyond the end of the array.
 // 0123456789??????????
 //             |---|
 
@@ -85,15 +85,20 @@ vw     = view(src, 12, 5, trunc=true, check=false); // string with count = -2 Th
 vw, ok = view_safe(src, 12, 5, trunc=true);         // "" ok=false
 
 
-// Views starting before the array
+// Views starting before the array.
 // ?????0123456789
 //   |---|
+
+// NOTE: This is always treated as an invalid view and cannot be truncated.
+//       *_safe variants always return false if you do this.
 
 neg3 := -3;
 vw = view(src, -3, 5);   // Comptime assert because -3 is constant
 vw = view(src, neg3, 5); // Runtime assert
 vw = view(src, neg3, 5, trunc=true); // Still runtime assert, truncation only works at the end
+vw, ok = view_safe(src, neg3, 5, trunc=true); // "" ok=false
 
-// Though I could add an additional option for truncation from the start, I have found no good reason for it.
-// If you have a good reason, or other things that could be added, let me know in the SB discord, @Sanian
+// Though I could add an additional option for truncation from the start, I have found no good
+// reason for it. If you have a good reason, or other things that could be added, let me know
+// in the SB discord, @Sanian
 ```
