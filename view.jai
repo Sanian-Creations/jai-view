@@ -37,7 +37,7 @@ rview ::      inline ($$source: []$E,   $$start_index: int, $$end_index: int, $t
 rview_safe :: inline ($$source: string, $$start_index: int, $$end_index: int, $trunc := false, $loc := #caller_location) -> string, ok := true     { #insert,scope() __rview; }
 rview_safe :: inline ($$source: []$E,   $$start_index: int, $$end_index: int, $trunc := false, $loc := #caller_location) -> []E   , ok := true     { #insert,scope() __rview; }
 
-// View to the end of the array ... [start_index, source.count)
+// View from start_index to the end of the array ... [start_index, source.count)
 view_from ::      inline ($$source: string, $$start_index: int, $check := true, $loc := #caller_location) -> string { #insert,scope() __view_from; }
 view_from ::      inline ($$source: []$E,   $$start_index: int, $check := true, $loc := #caller_location) -> []E    { #insert,scope() __view_from; }
 view_from_safe :: inline ($$source: string, $$start_index: int, $loc := #caller_location) -> string, ok := true     { #insert,scope() __view_from; }
